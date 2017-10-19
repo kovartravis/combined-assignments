@@ -3,6 +3,8 @@ package com.cooksys.ftd.assignments.collections;
 import com.cooksys.ftd.assignments.collections.hierarchy.Hierarchy;
 import com.cooksys.ftd.assignments.collections.model.Capitalist;
 import com.cooksys.ftd.assignments.collections.model.FatCat;
+import com.cooksys.ftd.assignments.collections.model.WageSlave;
+
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import java.util.*;
@@ -32,31 +34,23 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
     @Override
     public boolean add(Capitalist capitalist) {
     	Capitalist me = capitalist;
-    	FatCat myParent = me.getParent();
-		Set<Capitalist> myFellowWorkers = megaList.get(myParent);
-		
-		if(myFellowWorkers.contains(me)) return false;//if worker is already on list
-		
-		//if parent is on list but worker is not
-		if(has(myParent)){
-			myFellowWorkers.add(me);
-			megaList.put(myParent, myFellowWorkers);
-			return true;
-		}
-		//if parent is not on list but parent exists
-		if(me.hasParent()){
-			myFellowWorkers = new HashSet<Capitalist>();
-			myFellowWorkers.add(me);
-			megaList.put(myParent, myFellowWorkers);
-			return true;
-		}
-		//if has no parent but is Parent
-		if(me instanceof FatCat){
-			megaList.put((FatCat) me, null);
-		}else{//if has no parent and no children
-			return false;
-		}
-		return true;
+    	Set<Capitalist> myWorkers;
+    	Set<Capitalist> myParentsWorkers;
+    	
+    	if(me == null || !(me instanceof Capitalist) || has(me)) return false;
+    	if(me instanceof WageSlave && !me.hasParent()) return false;
+    	
+    	if(me.hasParent()){
+    		add(me.getParent());
+    		myParentsWorkers = megaList.get(me.getParent());
+    		myParentsWorkers.add(me);
+    		megaList.put(me.getParent(), myParentsWorkers);
+    	}
+    	if(me instanceof FatCat){
+    		myWorkers = new HashSet<Capitalist>();
+    		megaList.put((FatCat) me, myWorkers);
+    	}
+    	return true;
     }
 
     /**
@@ -65,8 +59,20 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
      */
     @Override
     public boolean has(Capitalist capitalist) {
-        if(megaList.containsKey(capitalist)) return true;
-        else return false;
+        if(megaList.isEmpty()) return false;
+        if(capitalist == null) return false;
+    
+        if(capitalist instanceof FatCat){
+        	return megaList.containsKey(capitalist);
+        }
+        if(capitalist instanceof WageSlave){
+        	if(capitalist.hasParent()){
+        		if(megaList.get(capitalist.getParent())!= null){
+        			return megaList.get(capitalist.getParent()).contains(capitalist);
+        		}
+        	}
+        }
+        return false;
     }
 
     /**
@@ -93,8 +99,10 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
      * or an empty set if no parents have been added to the hierarchy
      */
     @Override
-    public Set<FatCat> getParents() {	
-		return megaList.keySet();
+    public Set<FatCat> getParents() {
+    	Set<FatCat> defensiveSet = new HashSet<FatCat>();
+    	defensiveSet.addAll(megaList.keySet());
+		return defensiveSet;
     }
 
     /**
@@ -105,7 +113,11 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
      */
     @Override
     public Set<Capitalist> getChildren(FatCat fatCat) {
-        return megaList.get(fatCat);
+    	Set<Capitalist> defensiveSet = new HashSet<Capitalist>();
+    	if(megaList.containsKey(fatCat)){
+        	defensiveSet.addAll(megaList.get(fatCat));	
+    	}
+        return defensiveSet;
     }
 
     /**
@@ -115,7 +127,12 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
      */
     @Override
     public Map<FatCat, Set<Capitalist>> getHierarchy() {
-        return megaList;
+        Map<FatCat, Set<Capitalist>> defensiveSet = new HashMap<FatCat, Set<Capitalist>>();
+        Set<FatCat> parents = getParents();
+        for(FatCat fat : parents){
+        	defensiveSet.put(fat, getChildren(fat));
+        }
+        return defensiveSet;
     }
 
     /**
@@ -127,7 +144,10 @@ public class MegaCorp implements Hierarchy<Capitalist, FatCat> {
     @Override
     public List<FatCat> getParentChain(Capitalist capitalist) {
         List<FatCat> parentChain = new ArrayList<FatCat>();
+        if(capitalist == null) return parentChain;
+        
         while(capitalist.getParent() != null){
+            if(!megaList.containsKey(capitalist.getParent())) return parentChain;
         	parentChain.add(capitalist.getParent());
         	capitalist = capitalist.getParent();
         }
