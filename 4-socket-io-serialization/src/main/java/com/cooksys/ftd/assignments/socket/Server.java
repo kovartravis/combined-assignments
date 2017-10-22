@@ -60,20 +60,19 @@ public class Server {
         
     	ServerSocket socket = null;
 		Socket sock = null;
-		JAXBContext studentcontext = JAXBContext.newInstance(Student.class);
-		JAXBContext configcontext = JAXBContext.newInstance(Config.class);
+		JAXBContext context = Utils.createJAXBContext();
 		Marshaller marshall = null;
 		Student student = null;
 		Integer port = null;
 		OutputStream os = null;
 		XMLOutputFactory output = XMLOutputFactory.newInstance();
 		XMLStreamWriter streamwriter = null;
-		Config config = Utils.loadConfig("config.xml", configcontext);
+		Config config = Utils.loadConfig("config.xml", context);
 		
 		port = config.getLocal().getPort();
-		student = loadStudent(config.getStudentFilePath(), studentcontext);
+		student = loadStudent(config.getStudentFilePath(), context);
 		
-		System.out.println("waiting...");
+		System.out.println("Waiting...");
 		try {
 			socket = new ServerSocket(port);
 			sock = socket.accept();
@@ -85,8 +84,9 @@ public class Server {
 			e.printStackTrace();
 		}
 	
+		System.out.println("Sending File...");
 		try {
-			marshall = studentcontext.createMarshaller();
+			marshall = context.createMarshaller();
 			marshall.marshal(student, streamwriter);
 		} catch (JAXBException e) {
 			e.printStackTrace();

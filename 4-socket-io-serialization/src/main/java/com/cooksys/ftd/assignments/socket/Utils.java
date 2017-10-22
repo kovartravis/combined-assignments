@@ -28,8 +28,7 @@ public class Utils {
     	JAXBContext context = null;
     	
     	try {
-			context = JAXBContext.newInstance(Student.class);
-			context = JAXBContext.newInstance(Config.class);
+			context = JAXBContext.newInstance(Student.class, Config.class);
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}

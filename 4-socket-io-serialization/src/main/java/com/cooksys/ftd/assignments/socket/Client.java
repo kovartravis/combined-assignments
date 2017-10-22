@@ -29,8 +29,7 @@ public class Client {
     public static void main(String[] args) throws JAXBException {
     	
     	Socket socket = null;
-		JAXBContext studentcontext = JAXBContext.newInstance(Student.class);
-		JAXBContext configcontext = JAXBContext.newInstance(Config.class);
+		JAXBContext context = Utils.createJAXBContext();
 		Unmarshaller unmarshall = null;
 		InputStream in = null;
 		Student student = null;
@@ -38,7 +37,7 @@ public class Client {
 		String host = null;
 		XMLInputFactory input = XMLInputFactory.newInstance();
 		XMLStreamReader streamreader = null;
-		Config config = Utils.loadConfig("config.xml", configcontext);
+		Config config = Utils.loadConfig("config.xml", context);
 
 		port = config.getRemote().getPort();
 		host = config.getRemote().getHost();
@@ -58,7 +57,7 @@ public class Client {
 		
 		System.out.println("Receiving File...");
 		try {
-			unmarshall = studentcontext.createUnmarshaller();
+			unmarshall = context.createUnmarshaller();
 			student = (Student) unmarshall.unmarshal(streamreader);
 		} catch (JAXBException e) {
 			e.printStackTrace();
