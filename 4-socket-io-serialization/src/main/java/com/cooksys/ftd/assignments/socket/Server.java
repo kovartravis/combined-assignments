@@ -79,8 +79,12 @@ public class Server {
 			os = new FilterOutputStream(sock.getOutputStream());
 			streamwriter = output.createXMLStreamWriter(os);
 		} catch (IOException e) {
+			socket.close();
+			sock.close();
 			e.printStackTrace();
 		} catch (XMLStreamException e) {
+			socket.close();
+			sock.close();
 			e.printStackTrace();
 		}
 	

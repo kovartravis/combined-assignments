@@ -25,8 +25,9 @@ public class Client {
      * The client should expect the server to send a {@link com.cooksys.ftd.assignments.socket.model.Student} object
      * over the socket as xml, and should unmarshal that object before printing its details to the console.
      * @throws JAXBException 
+     * @throws IOException 
      */
-    public static void main(String[] args) throws JAXBException {
+    public static void main(String[] args) throws JAXBException, IOException {
     	
     	Socket socket = null;
 		JAXBContext context = Utils.createJAXBContext();
@@ -48,10 +49,14 @@ public class Client {
 			in =  socket.getInputStream();
 			streamreader = input.createXMLStreamReader(in);
 		} catch (UnknownHostException e) {
+			socket.close();
 			e.printStackTrace();
 		} catch (IOException e) {
+			socket.close();
 			e.printStackTrace();
 		} catch (XMLStreamException e) {
+			socket.close();
+			in.close();
 			e.printStackTrace();
 		}
 		
@@ -63,7 +68,7 @@ public class Client {
 			e.printStackTrace();
 		}
 		
-		System.out.println(student.toString());
+		System.out.println(student);
 		
         try {
 			in.close();
